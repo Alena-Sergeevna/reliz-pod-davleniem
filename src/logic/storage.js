@@ -1,5 +1,5 @@
 import { SCENARIO_VERSION, stages } from '../data/scenario.js';
-import { METRIC_IDS, clamp } from './scoring.js';
+import { METRIC_IDS, replayHistory } from './scoring.js';
 
 export const SAVE_KEY = 'rup-save-v1';
 export const MUTE_KEY = 'rup-muted';
@@ -59,15 +59,20 @@ export function sanitizeSave(data) {
   if (!data || data.scenarioVersion !== SCENARIO_VERSION) return null;
   if (!['briefing', 'stage', 'result'].includes(data.screen)) return null;
   if (!data.metrics) return null;
-
-  const metrics = {};
   for (const id of METRIC_IDS) {
     if (typeof data.metrics[id] !== 'number' || Number.isNaN(data.metrics[id])) return null;
-    metrics[id] = clamp(data.metrics[id]);
   }
 
-  let stageIndex = data.stageIndex | 0;
-  if (stageIndex < 0 || stageIndex >= stages.length) stageIndex = 0;
+  const replayed = replayHistory(Array.isArray(data.history) ? data.history : []);
+  const metrics = replayed.metrics;
+  const history = replayed.history;
+
+  let stageIndex = history.length;
+  if (data.screen === 'stage' && data.phase === 'outcome' && history.length > 0) {
+    const last = history[history.length - 1];
+    stageIndex = Math.max(0, stages.findIndex((stage) => stage.id === last.stageId));
+  }
+  if (stageIndex >= stages.length) stageIndex = stages.length - 1;
 
   const order = {};
   for (const stage of stages) {
@@ -78,18 +83,15 @@ export function sanitizeSave(data) {
     else order[stage.id] = ids;
   }
 
-  const history = Array.isArray(data.history)
-    ? data.history.filter((entry) => entry && stages.some((stage) => stage.id === entry.stageId))
-    : [];
-
   const stage = stages[stageIndex];
   let selectedId = data.selectedId ?? null;
   if (selectedId && !stage.options.some((option) => option.id === selectedId)) selectedId = null;
 
   let phase = data.phase === 'outcome' ? 'outcome' : 'choose';
   if (data.screen === 'stage' && phase === 'outcome') {
-    const recorded = history.some((entry) => entry.stageId === stage.id);
-    if (!recorded || !selectedId) phase = 'choose';
+    const recorded = history.find((entry) => entry.stageId === stage.id);
+    if (!recorded) phase = 'choose';
+    else selectedId = recorded.optionId;
   }
 
   return {

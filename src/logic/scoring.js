@@ -10,11 +10,36 @@ export function applyMetrics(current, effects) {
   const next = {};
   const applied = {};
   for (const id of METRIC_IDS) {
-    const raw = current[id] + effects[id];
-    next[id] = clamp(raw);
-    applied[id] = next[id] - current[id];
+    const base = Number(current?.[id]);
+    const delta = Number(effects?.[id]);
+    const safeBase = Number.isFinite(base) ? base : INITIAL_METRICS[id];
+    const safeDelta = Number.isFinite(delta) ? delta : 0;
+    next[id] = clamp(safeBase + safeDelta);
+    applied[id] = next[id] - clamp(safeBase);
   }
   return { next, applied };
+}
+
+export function replayHistory(history) {
+  let metrics = { ...INITIAL_METRICS };
+  const nextHistory = [];
+  const seen = new Set();
+  for (const entry of history || []) {
+    if (!entry || seen.has(entry.stageId)) continue;
+    const stage = stages.find((item) => item.id === entry.stageId);
+    const option = stage?.options.find((item) => item.id === entry.optionId);
+    if (!option) continue;
+    seen.add(stage.id);
+    const { next, applied } = applyMetrics(metrics, option.effects);
+    metrics = next;
+    nextHistory.push({
+      stageId: stage.id,
+      optionId: option.id,
+      tier: option.tier,
+      applied,
+    });
+  }
+  return { metrics, history: nextHistory };
 }
 
 export function judge(metrics) {
@@ -45,8 +70,8 @@ export function buildReview(metrics, history) {
   }
 
   if (lessons.length === 0) {
-    lessons.push('Команда прошла все этапы так, чтобы знания, проверки и приоритеты были общими, а не личными.');
-    lessons.push('Запас времени всё равно уменьшился: ясные договорённости и проверка стоят дней сейчас и спасают недели потом.');
+    lessons.push('Знания, проверки и приоритеты остались общими, а не личными.');
+    lessons.push('Запас времени всё равно уменьшился: договорённости и проверка занимают дни сейчас.');
   }
 
   return {

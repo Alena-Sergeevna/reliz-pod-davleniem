@@ -89,37 +89,50 @@ export function App() {
   }
 
   function confirmChoice() {
-    if (confirming.current || !session || session.screen !== 'stage' || session.phase !== 'choose' || !session.selectedId) {
-      return;
-    }
-    const stage = stages[session.stageIndex];
-    if (session.history.some((entry) => entry.stageId === stage.id)) return;
-    const option = stage.options.find((item) => item.id === session.selectedId);
-    if (!option) return;
-    const { next, applied } = applyMetrics(session.metrics, option.effects);
+    if (confirming.current) return;
     confirming.current = true;
-    setSession({
-      ...session,
-      metrics: next,
-      phase: 'outcome',
-      history: [
-        ...session.history,
-        {
-          stageId: stage.id,
-          optionId: option.id,
-          tier: option.tier,
-          applied,
-        },
-      ],
+    let picked = null;
+    setSession((current) => {
+      if (!current || current.screen !== 'stage' || current.phase !== 'choose' || !current.selectedId) {
+        confirming.current = false;
+        return current;
+      }
+      const stage = stages[current.stageIndex];
+      if (current.history.some((entry) => entry.stageId === stage.id)) {
+        confirming.current = false;
+        return current;
+      }
+      const option = stage.options.find((item) => item.id === current.selectedId);
+      if (!option) {
+        confirming.current = false;
+        return current;
+      }
+      picked = option;
+      const { next, applied } = applyMetrics(current.metrics, option.effects);
+      return {
+        ...current,
+        metrics: next,
+        phase: 'outcome',
+        history: [
+          ...current.history,
+          {
+            stageId: stage.id,
+            optionId: option.id,
+            tier: option.tier,
+            applied,
+          },
+        ],
+      };
     });
-    if (option.tier === 'system') {
+    if (!picked) return;
+    if (picked.tier === 'system') {
       if (!muted) playClear();
       return;
     }
     if (!motionAllowed()) return;
-    setAlarm({ tier: option.tier, line: option.scare, token: Date.now() });
-    if (!muted) playAlarm(option.tier);
-    if (option.tier === 'risk' && typeof navigator.vibrate === 'function') {
+    setAlarm({ tier: picked.tier, line: picked.scare, token: Date.now() });
+    if (!muted) playAlarm(picked.tier);
+    if (picked.tier === 'risk' && typeof navigator.vibrate === 'function') {
       try {
         navigator.vibrate([28, 40, 70]);
       } catch {

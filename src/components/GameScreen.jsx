@@ -196,7 +196,7 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
           </div>
           {!locked && (
             <div className="decision-row">
-              <p>Ваше решение повлияет на всю команду. До кнопки вариант можно сменить.</p>
+              <p>До кнопки выбор можно сменить.</p>
               <button type="submit" className="button" disabled={!session.selectedId}>
                 Принять решение →
               </button>
@@ -257,7 +257,7 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
                 <p>{stage.lesson}</p>
               </aside>
               {chosen.tier !== 'system' && (
-                <p className="keep-going">Ход уже зафиксирован. Игра продолжается: впереди остальные этапы.</p>
+                <p className="keep-going">Игра продолжается.</p>
               )}
             </div>
           </section>

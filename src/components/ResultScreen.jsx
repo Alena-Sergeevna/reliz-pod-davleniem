@@ -31,7 +31,7 @@ export function ResultScreen({ session, onReplay }) {
                 <strong>{stage.short}</strong>
                 <b>{option ? option.title : 'Решение не записано'}</b>
                 {option && <em>{tierMeta[option.tier].label}</em>}
-                {option && <p>{option.consequenceTitle}. {stage.lesson}</p>}
+                {option && <p>{option.consequenceTitle}</p>}
               </div>
             </li>
           );
@@ -48,10 +48,8 @@ export function ResultScreen({ session, onReplay }) {
       <aside className="study">
         <h2>Как это связано с учёбой</h2>
         <p>
-          На специальности {project.code} «{project.specialty}» веб-продукт собирают не в одиночку.
-          Product Manager держит договорённость с заказчиком, дизайнер делает интерфейс понятным,
-          архитектор следит за размером решения, разработчики пишут код, тестировщик проверяет поведение,
-          инженер выпуска отвечает за повторную выкладку, поддержка не даёт просьбам потеряться после запуска.
+          На специальности {project.code} «{project.specialty}» продукт собирает команда:
+          менеджер продукта, дизайнер, архитектор, разработчики, тестировщик, инженер выпуска и поддержка.
         </p>
         <p>
           Вопрос для обсуждения: кого, кроме разработчика, вы позовёте в команду — и зачем?
