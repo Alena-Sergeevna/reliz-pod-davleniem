@@ -35,7 +35,7 @@ export function BriefingScreen({ onNext }) {
           <ol className="briefing-steps">
             <li>
               <strong>Ситуация</strong>
-              <span>Проблема и три хода. Верный заранее не отмечен.</span>
+              <span>На каждом из шести этапов — проблема и три хода. Верный заранее не отмечен.</span>
             </li>
             <li>
               <strong>Решение</strong>
@@ -43,7 +43,7 @@ export function BriefingScreen({ onNext }) {
             </li>
             <li>
               <strong>Последствия</strong>
-              <span>Меняются числа и команда. Ошибка игру не останавливает.</span>
+              <span>Меняются числа и команда. Ошибка не обрывает игру: идёте дальше по этапам.</span>
             </li>
           </ol>
         </section>

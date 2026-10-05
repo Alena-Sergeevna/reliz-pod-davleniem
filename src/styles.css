@@ -28,7 +28,8 @@
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
+  height: auto;
 }
 
 html,
@@ -80,8 +81,10 @@ html {
 }
 
 body {
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100dvh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body.is-alarm {
@@ -162,10 +165,10 @@ ol {
   display: flex;
   flex-direction: column;
   width: min(1180px, 100%);
-  height: 100%;
-  min-height: 0;
+  min-height: 100dvh;
+  height: auto;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   background: var(--canvas);
 }
 
@@ -306,7 +309,7 @@ ol {
   min-height: 0;
   margin: 0 auto;
   padding: 20px 20px 24px;
-  overflow: auto;
+  overflow: visible;
   align-content: start;
 }
 
@@ -320,15 +323,15 @@ ol {
   width: min(1120px, 100%);
   gap: 10px;
   padding: 12px 16px 14px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .briefing__body {
   display: grid;
   gap: 10px;
-  align-content: center;
+  align-content: start;
   min-height: 0;
-  overflow: auto;
+  overflow: visible;
 }
 
 .briefing__intro,
@@ -486,6 +489,8 @@ ol {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  height: auto;
+  overflow: visible;
 }
 
 .sidebar {
@@ -499,8 +504,9 @@ ol {
   gap: 8px;
   min-width: 0;
   min-height: 0;
+  height: auto;
   padding: 8px 16px 8px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .play {
@@ -509,7 +515,8 @@ ol {
   flex-direction: column;
   gap: 12px;
   min-height: 0;
-  overflow: auto;
+  height: auto;
+  overflow: visible;
 }
 
 .play-main {
@@ -533,6 +540,58 @@ ol {
   align-items: center;
   gap: 10px;
   margin-left: auto;
+}
+
+.mission-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #f7f9ff 0%, var(--paper) 100%);
+}
+
+.mission-bar__title {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.mission-bar__hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+  max-width: 280px;
+}
+
+.workspace.is-card .board {
+  gap: 10px;
+}
+
+.workspace.is-card .play--mission {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.workspace.is-card .story .crumb span:first-child {
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.workspace.is-card .options--grid .option {
+  min-height: 112px;
+}
+
+.workspace.is-hq .play--hq {
+  background: transparent;
 }
 
 .stage-tabs {
@@ -1259,30 +1318,35 @@ blockquote {
   }
 
   .app {
-    height: 100%;
+    min-height: calc(100dvh - 32px);
+    height: auto;
     border-radius: 28px;
     box-shadow: 0 24px 60px rgba(24, 32, 56, 0.08);
   }
 
   .workspace.is-hq,
   .workspace.is-card {
-    height: 100%;
-    overflow: hidden;
+    height: auto;
+    min-height: calc(100dvh - 32px - 56px);
+    overflow: visible;
   }
 
   .workspace.is-hq {
     display: grid;
     grid-template-columns: 240px minmax(0, 1fr);
-    align-items: stretch;
+    align-items: start;
   }
 
   .workspace.is-hq .sidebar {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    position: sticky;
+    top: 16px;
+    height: auto;
+    max-height: none;
     min-height: 0;
     padding: 14px 12px;
-    overflow: auto;
+    overflow: visible;
     border-right: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.72);
   }
@@ -1296,11 +1360,32 @@ blockquote {
     gap: 4px;
   }
 
-  .workspace.is-hq .board-foot .team-block {
+  .workspace.is-hq .stage-tabs,
+  .workspace.is-hq .mission-bar,
+  .workspace.is-hq .stage-tabs--mobile {
     display: none;
   }
 
-  .workspace.is-hq .stage-tabs {
+  .workspace.is-card .sidebar {
+    display: none;
+  }
+
+  .workspace.is-card .board {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .workspace.is-card .play--mission {
+    min-height: 0;
+  }
+
+  .workspace.is-card .metrics-wrap {
+    padding-top: 2px;
+    border-top: 1px dashed var(--line);
+  }
+
+  .workspace.is-hq .board-foot .team-block {
     display: none;
   }
 
@@ -1326,19 +1411,33 @@ blockquote {
   .play {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
-    align-items: stretch;
-    overflow: hidden;
+    align-items: start;
+    overflow: visible;
   }
 
   .story,
   .play-main {
     min-height: 0;
-    overflow: auto;
+    overflow: visible;
   }
 
   .workspace.is-card .play {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 0.85fr) minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .workspace.is-card .options--grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .workspace.is-card .option {
+    align-items: flex-start;
+  }
+
+  .workspace.is-card .option strong {
+    display: block;
+    margin-bottom: 4px;
   }
 
   .workspace.is-locked .play-main,
@@ -1348,7 +1447,7 @@ blockquote {
 
   .workspace.is-hq.is-locked .play {
     grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
     grid-template-areas:
       "story copy"
       "facts facts";
@@ -1356,7 +1455,7 @@ blockquote {
 
   .workspace.is-card.is-locked .play {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: none;
     grid-template-areas:
       "story"
       "copy"
@@ -1378,14 +1477,14 @@ blockquote {
   .workspace.is-locked .outcome-copy {
     grid-area: copy;
     min-height: 0;
-    overflow: auto;
-    gap: 6px;
-    padding: 6px 12px;
+    overflow: visible;
+    gap: 8px;
+    padding: 12px;
   }
 
   .workspace.is-locked .outcome-facts {
     grid-area: facts;
-    padding: 10px 12px;
+    padding: 12px;
   }
 
   .workspace.is-locked .outcome-facts .effect-list {
@@ -1416,64 +1515,11 @@ blockquote {
   }
 
   .workspace.is-hq.is-locked .story {
-    gap: 6px;
+    gap: 8px;
   }
 
   .workspace.is-hq.is-locked .story h1 {
     font-size: 24px;
-  }
-
-  .workspace.is-hq.is-locked .kicker {
-    display: none;
-  }
-
-  .workspace.is-hq.is-locked .lede,
-  .workspace.is-hq.is-locked blockquote,
-  .workspace.is-hq.is-locked .terms dd {
-    font-size: 14px;
-    line-height: 1.35;
-  }
-
-  .workspace.is-hq.is-locked .terms {
-    gap: 4px;
-  }
-
-  .workspace.is-hq.is-locked .terms div {
-    padding: 6px 8px;
-  }
-
-  .workspace.is-hq.is-locked .terms dt,
-  .workspace.is-hq.is-locked .terms dd {
-    display: inline;
-  }
-
-  .workspace.is-hq.is-locked .terms dd::before {
-    content: " — ";
-  }
-
-  .workspace.is-hq.is-locked .message {
-    gap: 6px;
-    padding: 8px 10px;
-  }
-
-  .workspace.is-hq.is-locked .outcome h3 {
-    font-size: 15px;
-    line-height: 1.25;
-  }
-
-  .workspace.is-hq.is-locked .reactions {
-    gap: 4px;
-  }
-
-  .workspace.is-hq.is-locked .reactions small {
-    font-size: 13px;
-    line-height: 1.3;
-  }
-
-  .workspace.is-card.is-locked .lede,
-  .workspace.is-card.is-locked .terms,
-  .workspace.is-card.is-locked .message {
-    display: none;
   }
 
   .workspace.is-card .options--grid {
@@ -1500,7 +1546,8 @@ blockquote {
   body {
     height: auto;
     min-height: 100dvh;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   body.is-alarm {
@@ -1510,7 +1557,10 @@ blockquote {
   .app,
   .workspace,
   .board,
-  .play {
+  .play,
+  .story,
+  .play-main,
+  .outcome-copy {
     height: auto;
     overflow: visible;
   }
@@ -1525,38 +1575,45 @@ blockquote {
     overflow: visible;
   }
 
+  .workspace.is-card .play--mission {
+    padding: 10px;
+  }
+
+  .mission-bar {
+    align-items: flex-start;
+  }
+
+  .mission-bar__hint {
+    max-width: none;
+  }
+
   .stage-tabs .stage-list {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     overflow: visible;
   }
 
   .stage-tabs .stage-list li {
-    position: relative;
-    justify-content: center;
-    min-height: 32px;
-    padding: 4px 2px;
-    border-radius: 999px;
+    justify-content: flex-start;
+    min-height: 40px;
+    padding: 6px 8px;
+    border-radius: 12px;
     background: #eef1f6;
     font-size: 12px;
-    gap: 0;
+    gap: 6px;
   }
 
   .stage-tabs .stage-list li span:first-child {
     color: var(--muted);
+    flex: 0 0 auto;
   }
 
   .stage-tabs .stage-list li span:last-child {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
+    min-width: 0;
     overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    text-overflow: ellipsis;
     white-space: nowrap;
-    border: 0;
   }
 
   .stage-tabs .stage-list .is-done {
@@ -1572,13 +1629,14 @@ blockquote {
     color: var(--accent-dark);
   }
 
-  .stage-tabs .stage-list .is-current span:first-child {
+  .stage-tabs .stage-list .is-current span {
     color: white;
   }
 
   .board {
     padding-left: 12px;
     padding-right: 12px;
+    padding-bottom: 16px;
   }
 
   .board-foot .team-block {
@@ -1623,12 +1681,23 @@ blockquote {
     min-height: 44px;
   }
 
+  .workspace.is-card .options--grid {
+    grid-template-columns: 1fr;
+  }
+
+  .crumb {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
   .board-foot__end {
     position: sticky;
     bottom: 0;
     z-index: 2;
-    background: var(--canvas);
-    padding-top: 8px;
+    background: linear-gradient(180deg, transparent, var(--canvas) 18%);
+    padding-top: 12px;
+    padding-bottom: 4px;
   }
 
   .decision-row,
@@ -1649,44 +1718,15 @@ blockquote {
   .result .button {
     width: 100%;
   }
-}
 
-@media (min-width: 960px) and (max-height: 760px) {
-  .workspace.is-hq.is-locked .story {
-    display: none;
+  .pager {
+    justify-content: space-between;
   }
 
-  .workspace.is-hq.is-locked .play {
-    grid-template-areas:
-      "copy copy"
-      "facts facts";
-  }
-
-  .workspace.is-hq.is-locked .outcome-copy {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    column-gap: 16px;
-    align-content: start;
-  }
-
-  .workspace.is-hq.is-locked .outcome-copy .banner,
-  .workspace.is-hq.is-locked .outcome-copy .tier-line,
-  .workspace.is-hq.is-locked .outcome-copy > h3:not(.reactions-head),
-  .workspace.is-hq.is-locked .outcome-copy > p,
-  .workspace.is-hq.is-locked .outcome-copy .anti {
-    grid-column: 1;
-  }
-
-  .workspace.is-hq.is-locked .reactions-head,
-  .workspace.is-hq.is-locked .reactions {
-    grid-column: 2;
-  }
-
-  .workspace.is-hq.is-locked .reactions-head {
-    grid-row: 1;
-  }
-
-  .workspace.is-hq.is-locked .reactions {
-    grid-row: 2 / span 4;
+  .pager span {
+    flex: 1;
+    text-align: center;
+    white-space: normal;
   }
 }
 
@@ -1706,7 +1746,7 @@ blockquote {
 
   .workspace.is-locked .outcome-facts {
     gap: 4px;
-    padding: 6px 10px;
+    padding: 8px 10px;
   }
 
   .story h1 {
@@ -1716,10 +1756,6 @@ blockquote {
   .lede,
   blockquote {
     font-size: 15px;
-  }
-
-  .project-card p:not(.eyebrow):not(.code) {
-    display: none;
   }
 
   .sidebar .stage-list li {
