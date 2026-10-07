@@ -104,6 +104,6 @@ export function sanitizeSave(data) {
     selectedId: phase === 'choose' && data.screen !== 'result' ? selectedId : selectedId,
     phase: data.screen === 'stage' ? phase : 'choose',
     history,
-    layout: data.layout === 'card' ? 'card' : 'hq',
+    layout: data.layout === 'hq' ? 'hq' : 'card',
   };
 }

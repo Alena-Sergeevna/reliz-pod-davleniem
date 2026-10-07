@@ -70,16 +70,21 @@ export function buildReview(metrics, history) {
   }
 
   if (lessons.length === 0) {
-    lessons.push('Знания, проверки и приоритеты остались общими, а не личными.');
-    lessons.push('Запас времени всё равно уменьшился: договорённости и проверка занимают дни сейчас.');
+    lessons.push('Задачи, правила тестирования и приоритеты остались общими, а не личными.');
+    lessons.push('Запас времени всё равно уменьшился: договорённости и проверка занимают время, но повышают стабильность.');
   }
+
+  const tookShortcut = history.some((entry) => entry.tier === 'risk');
+  const timeLesson = tookShortcut
+    ? 'Быстрые ходы экономят время сейчас, но потом за них платят переделками и срочными исправлениями.'
+    : 'Время — тоже ресурс: его тратят на проверки и договорённости, чтобы не терять недели на переделки.';
 
   return {
     verdict,
     title: outcomeCopy[verdict].title,
     text: outcomeCopy[verdict].text,
     weakestLine: `Слабое место — ${weakNames}. ${weak.map((item) => weakestCopy[item.id]).join(' ')}`,
-    lessons: lessons.slice(0, 3),
+    lessons: [...lessons.slice(0, 3), timeLesson],
     fromStart: Object.fromEntries(
       METRIC_IDS.map((id) => [id, metrics[id] - INITIAL_METRICS[id]]),
     ),

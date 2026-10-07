@@ -590,8 +590,145 @@ ol {
   min-height: 112px;
 }
 
-.workspace.is-hq .play--hq {
-  background: transparent;
+.hq {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.hq__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 16px;
+}
+
+.hq__head h1 {
+  font-size: clamp(22px, 2.4vw, 28px);
+}
+
+.hq-panel {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.hq-panel h2 {
+  font-size: 15px;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+.hq-panel p {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.hq-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.hq-forecast__title,
+.hq-current__stage {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hq-forecast--stable .hq-forecast__title { color: var(--ok); }
+.hq-forecast--mixed .hq-forecast__title { color: var(--warn); }
+.hq-forecast--crisis .hq-forecast__title { color: var(--danger); }
+
+.hq-status {
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.hq-status--system { color: var(--ok); }
+.hq-status--partial { color: var(--warn); }
+.hq-status--risk { color: var(--danger); }
+
+.hq-history,
+.hq-team {
+  display: grid;
+  gap: 6px;
+}
+
+.hq-history li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #f4f6fb;
+}
+
+.hq-history__num {
+  flex: 0 0 auto;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.hq-history__body {
+  display: grid;
+  min-width: 0;
+}
+
+.hq-history__body small,
+.hq-team small {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.hq-history .is-current { background: var(--accent-soft); }
+.hq-history .is-current .hq-history__num { color: var(--accent-dark); }
+.hq-history .is-system { box-shadow: inset 3px 0 0 var(--ok); }
+.hq-history .is-partial { box-shadow: inset 3px 0 0 var(--warn); }
+.hq-history .is-risk { box-shadow: inset 3px 0 0 var(--danger); }
+.hq-history .is-ahead { opacity: 0.6; }
+
+.hq-team li {
+  display: grid;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #f4f6fb;
+}
+
+.hq-team li.is-strained {
+  background: #fdf0ee;
+}
+
+.hq-team li.is-strained small {
+  color: var(--danger);
+}
+
+@media (min-width: 720px) {
+  .hq-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hq-history,
+  .hq-team {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .hq-history {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hq-team {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .stage-tabs {

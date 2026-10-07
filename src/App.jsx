@@ -154,6 +154,7 @@ export function App() {
         stageIndex: current.stageIndex + 1,
         phase: 'choose',
         selectedId: null,
+        layout: 'card',
       };
     });
   }

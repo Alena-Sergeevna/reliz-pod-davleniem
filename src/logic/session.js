@@ -13,6 +13,6 @@ export function createSession() {
     selectedId: null,
     phase: 'choose',
     history: [],
-    layout: 'hq',
+    layout: 'card',
   };
 }

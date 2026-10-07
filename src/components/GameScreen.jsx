@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { metricsMeta, project, roles, stages, tierMeta } from '../data/scenario.js';
+import { INITIAL_METRICS, metricsMeta, outcomeCopy, project, roles, stages, tierMeta } from '../data/scenario.js';
+import { judge, weakestMetrics } from '../logic/scoring.js';
 import { Metrics } from './Metrics.jsx';
 
 function roleOf(id) {
@@ -83,7 +84,7 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
 
   const teamList = (
     <div className="team-block">
-      <p>{isHq ? 'Команда проекта' : 'Затронутые роли'}</p>
+      <p>{locked ? 'Затронутые роли' : 'Команда'}</p>
       <ul>
         {roles.map((role) => {
           const hit = locked && chosen?.affects.includes(role.id);
@@ -106,22 +107,6 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
 
   const story = (
     <section className="story" aria-labelledby="stage-title">
-      <div className="crumb">
-        {isHq ? (
-          <>
-            <span>{project.name} · этап жизненного цикла</span>
-            <span>{stageNo} из {stages.length}</span>
-          </>
-        ) : (
-          <>
-            <span>Миссия {stageNo} из {stages.length}</span>
-            <span>{stage.short}</span>
-          </>
-        )}
-      </div>
-      <p className="kicker">
-        {isHq ? `Штаб проекта · ${stage.short}` : `Миссия ${stageNo} · ${stage.antipattern}`}
-      </p>
       <h1 id="stage-title" tabIndex={-1} ref={titleRef}>{stage.title}</h1>
       <p className="lede">{stage.lead}</p>
       {stage.terms?.length > 0 && (
@@ -158,12 +143,12 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
       }}
     >
       <div className="choices__head">
-        <h2>{isCard ? 'Выберите ход миссии' : 'Как вы поступите?'}</h2>
+        <h2>Как вы поступите?</h2>
       </div>
       <div
-        className={`options ${isCard ? 'options--grid' : 'options--stack'}`}
+        className="options options--grid"
         role="radiogroup"
-        aria-label={isCard ? 'Выберите ход миссии' : 'Как вы поступите?'}
+        aria-label="Как вы поступите?"
         onKeyDown={onGroupKeyDown}
       >
         {options.map((option, index) => {
@@ -214,7 +199,7 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
           <span>Антипаттерн этапа</span>
           {stage.antipattern}. {stage.antipatternHint}
         </p>
-        <h3 className="reactions-head">Как это задело команду</h3>
+        <h3 className="reactions-head">Что говорит команда</h3>
         <ul className="reactions">
           {chosen.reactions.map((reaction) => {
             const role = roleOf(reaction.roleId);
@@ -259,13 +244,113 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
     </section>
   );
 
+  const verdict = judge(session.metrics);
+  const weak = weakestMetrics(session.metrics);
+  const fromStart = Object.fromEntries(
+    metricsMeta.map((meta) => [meta.id, session.metrics[meta.id] - INITIAL_METRICS[meta.id]]),
+  );
+  const roleLoad = roles.map((role) => {
+    let rough = 0;
+    let steady = 0;
+    for (const item of session.history) {
+      const past = stages.find((s) => s.id === item.stageId)?.options.find((o) => o.id === item.optionId);
+      if (!past?.affects.includes(role.id)) continue;
+      if (past.tier === 'system') steady += 1;
+      else rough += 1;
+    }
+    return { role, rough, steady };
+  });
+
+  const hqView = (
+    <div className="hq">
+      <div className="hq__head">
+        <div>
+          <p className="eyebrow">Штаб проекта · {project.name}</p>
+          <h1 id="stage-title" tabIndex={-1} ref={titleRef}>
+            Состояние проекта на этапе {stageNo} из {stages.length}
+          </h1>
+        </div>
+        <button type="button" className="button button--ghost" onClick={() => onLayout('card')}>
+          {locked ? 'К карточке миссии' : 'Вернуться к решению →'}
+        </button>
+      </div>
+
+      <section className="hq-panel" aria-labelledby="hq-metrics">
+        <h2 id="hq-metrics">Показатели с начала проекта</h2>
+        <Metrics metrics={session.metrics} deltas={fromStart} mode="total" />
+      </section>
+
+      <div className="hq-grid">
+        <section className={`hq-panel hq-forecast hq-forecast--${verdict}`} aria-labelledby="hq-forecast">
+          <h2 id="hq-forecast">Если выпустить сейчас</h2>
+          <p className="hq-forecast__title">{outcomeCopy[verdict].title}</p>
+          <p>
+            Слабее всего: {weak.map((item) => `${item.full.toLowerCase()} (${session.metrics[item.id]})`).join(', ')}.
+          </p>
+        </section>
+
+        <section className="hq-panel" aria-labelledby="hq-current">
+          <h2 id="hq-current">Текущий этап</h2>
+          <p className="hq-current__stage">{stageNo}. {stage.short}</p>
+          <p>{stage.title}</p>
+          <p className={`hq-status ${locked && chosen ? `hq-status--${chosen.tier}` : ''}`}>
+            {locked && chosen
+              ? `Решение: ${chosen.title} — ${tierMeta[chosen.tier].label.toLowerCase()}`
+              : 'Решение ещё не принято'}
+          </p>
+        </section>
+      </div>
+
+      <section className="hq-panel" aria-labelledby="hq-history">
+        <h2 id="hq-history">Решения по этапам</h2>
+        <ol className="hq-history">
+          {stages.map((item, index) => {
+            const done = session.history.find((h) => h.stageId === item.id);
+            const option = done && item.options.find((o) => o.id === done.optionId);
+            const state = option ? `is-${option.tier}` : index === session.stageIndex ? 'is-current' : 'is-ahead';
+            return (
+              <li key={item.id} className={state}>
+                <span className="hq-history__num">{String(index + 1).padStart(2, '0')}</span>
+                <span className="hq-history__body">
+                  <strong>{item.short}</strong>
+                  <small>
+                    {option
+                      ? `${option.title} · ${tierMeta[option.tier].label}`
+                      : index === session.stageIndex
+                        ? 'Сейчас: решение в карточке миссии'
+                        : 'Впереди'}
+                  </small>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+
+      <section className="hq-panel" aria-labelledby="hq-team">
+        <h2 id="hq-team">Нагрузка на команду</h2>
+        <ul className="hq-team">
+          {roleLoad.map(({ role, rough, steady }) => (
+            <li key={role.id} className={rough >= 2 ? 'is-strained' : ''}>
+              <strong>{role.name}</strong>
+              <small>
+                {rough === 0 && steady === 0
+                  ? 'Пока не затронут'
+                  : `Неудачных ходов: ${rough} · верных: ${steady}`}
+              </small>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+
   return (
     <div className={`workspace is-${session.layout} ${locked ? 'is-locked' : ''}`}>
       {isHq && (
         <aside className="sidebar">
           <p className="eyebrow">Жизненный цикл</p>
           <StageProgress stageIndex={session.stageIndex} mode="stack" />
-          {teamList}
           <div className="project-card">
             <p className="eyebrow">Ваш проект</p>
             <h2>{project.name}</h2>
@@ -288,32 +373,27 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
           </div>
         )}
 
-        {isHq && (
-          <div className="stage-tabs stage-tabs--mobile" aria-label="Этапы">
-            <StageProgress stageIndex={session.stageIndex} mode="tabs" />
-          </div>
-        )}
-
-        {isCard && (
-          <div className="stage-tabs" aria-label="Этапы миссии">
-            <StageProgress stageIndex={session.stageIndex} mode="tabs" />
-          </div>
-        )}
-
-        {isHq && metricsBlock}
-
-        <div className={`play ${isCard ? 'play--mission' : 'play--hq'}`}>
-          {story}
-          <div className="play-main">
-            {choices}
-            {outcome}
-          </div>
+        <div className={`stage-tabs ${isHq ? 'stage-tabs--mobile' : ''}`} aria-label="Этапы">
+          <StageProgress stageIndex={session.stageIndex} mode="tabs" />
         </div>
 
-        {isCard && metricsBlock}
+        {isCard && (
+          <>
+            <div className="play play--mission">
+              {story}
+              <div className="play-main">
+                {choices}
+                {outcome}
+              </div>
+            </div>
+            {metricsBlock}
+          </>
+        )}
+
+        {isHq && hqView}
 
         <footer className="board-foot">
-          {teamList}
+          {isCard && teamList}
           <div className="board-foot__end">
             {locked && chosen && (
               <button type="button" className="button" onClick={onAdvance} disabled={Boolean(alarm)}>
@@ -329,9 +409,9 @@ export function GameScreen({ session, alarm, onSelect, onConfirm, onAdvance, onL
                 ‹
               </button>
               <span>
-                {isHq
-                  ? '1 / 2 · Штаб: обзор проекта'
-                  : '2 / 2 · Карточка: одна миссия'}
+                {isCard
+                  ? '1 / 2 · Карточка: одна миссия'
+                  : '2 / 2 · Штаб: весь проект'}
               </span>
               <button
                 type="button"
